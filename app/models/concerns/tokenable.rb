@@ -2,10 +2,9 @@ module Tokenable
   extend ActiveSupport::Concern
 
   def generate_unique_token(attribute = :token, type = :digit, size = 6)
-    case type
-    when :hex
+    if type == :hex
       generate_unique_hex_token(attribute, size)
-    else :digit
+    else
       generate_unique_digit_token(attribute, size)
     end
     generate_unique_token(attribute, type, size) if self.class.exists?(attribute => send(attribute))
