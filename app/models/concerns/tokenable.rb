@@ -33,13 +33,13 @@ module Tokenable
         input[:args] = args.any? ? args : [:token]
         input[:type] = options[:type] || :digit
         input[:size] = options[:size] || 6
-        input[:callback] = options[:callback] || :before_create
+        input[:before] = options[:before] || :create
         input
       end
 
       def add_callback(input, &block)
         input[:args].each do |attribute|
-          send(input[:callback]) do |record|
+          send("before_#{ input[:before] }") do |record|
             record.generate_unique_token(attribute, input[:type], input[:size])
           end
         end
