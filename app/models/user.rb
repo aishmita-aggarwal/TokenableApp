@@ -1,6 +1,6 @@
 class User < ActiveRecord::Base
   include Tokenable
 
-  tokenize :name, type: :hex, size: 12, before: :create
-  tokenize
+  acts_as_tokenable :name, type: :hex, length: 12, before: :create
+  acts_as_tokenable
 end
