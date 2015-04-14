@@ -1,5 +1,6 @@
 class User < ActiveRecord::Base
   include Tokenable
 
-  validates :name, presence: true
+  tokenize :name, type: :hex, size: 12, callback: :before_create
+  tokenize
 end
