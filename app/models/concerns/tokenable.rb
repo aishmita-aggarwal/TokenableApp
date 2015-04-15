@@ -1,7 +1,7 @@
 module Tokenable
   extend ActiveSupport::Concern
 
-  def generate_unique_token(attribute = :token, type = '', length = 6)
+  def generate_unique_token(attribute = :token, type = :digit, length = 6)
     if type == :hex
       generate_unique_hex_token(attribute, length)
     else
@@ -21,24 +21,30 @@ module Tokenable
 
   class_methods do
 
-    def acts_as_tokenable(column = :token, options = {})
-      input = set_values(column, options)
-      add_callback(input)
+    def acts_as_tokenable(*args)
+      options = (args.last.is_a? Hash) ? args.pop : {}
+      add_callback(set_values(args, options))
     end
 
     private
-      def set_values(column, options)
-        input = {}
-        input[:column] =  column
-        input[:type] = options[:type] || :digit
-        input[:length] = options[:length] || 6
-        input[:before] = options[:before] || :create
-        input
+      def set_values(columns, options)
+        input = {
+          columns: columns.any? ? columns : [:token],
+          type: options[:type] || :digit,
+          length: options[:length] || 6,
+          before: options[:before] || :create
+        }
       end
 
       def add_callback(input)
-        send("before_#{ input[:before] }") do |record|
-          record.generate_unique_token(input[:column], input[:type], input[:length])
+        input[:columns].each do |attribute|
+          send("before_#{ input[:before] }") do |record|
+            if record.has_attribute?(attribute)
+              record.generate_unique_token(attribute, input[:type], input[:length])
+            else
+              raise ActiveRecord::UnknownAttributeError.new(record, attribute)
+            end
+          end
         end
       end
   end
